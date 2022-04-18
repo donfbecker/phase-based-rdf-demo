@@ -21,6 +21,8 @@ class Main extends Sprite {
 	private var distanceOffsetWidget:DistanceOffsetWidget;
 	private var bearingWidget:BearingWidget;
 
+	private var paused:Bool = false;
+
 	public function new() {
 		super();
 
@@ -50,6 +52,8 @@ class Main extends Sprite {
 	}
 
 	private function onEnterFrame(e:Event):Void {
+		if(paused) return;
+
 		towerWidget.tick();
 		phaseOffsetWidget.tick(towerWidget.phase);
 		distanceOffsetWidget.tick(towerWidget.phase, towerWidget.waveLength);
@@ -79,6 +83,9 @@ class Main extends Sprite {
 	private function onKeyDown(e:KeyboardEvent):Void {
 		switch (e.keyCode) {
 			case Keyboard.P:
+				paused = !paused;
+
+			case Keyboard.F:
 				towerWidget.togglePaused();
 
 			case Keyboard.R:

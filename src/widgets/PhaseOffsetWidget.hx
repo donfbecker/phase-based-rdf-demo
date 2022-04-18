@@ -37,7 +37,7 @@ class PhaseOffsetWidget extends Widget {
 
 			while(points[i].length > widgetWidth) points[i].shift();
 
-			graphics.lineStyle(1, colors[i]);
+			graphics.lineStyle(2, colors[i]);
 
 			graphics.moveTo(0, midPoint + (points[i][0] * (widgetHeight / 3)));
 			for(x in 1...points[i].length) {
