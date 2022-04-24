@@ -43,6 +43,6 @@ class BearingWidget extends Widget {
 	public function tick(bearing:Float):Void {
 		arrow.x = background.x = (widgetWidth / 2);
 		arrow.y = background.y = (widgetHeight / 2);
-		arrow.rotation = bearing;
+		arrow.rotation = (bearing * -1);
 	}
 }

@@ -6,8 +6,8 @@ class DistanceOffsetWidget extends Widget {
 	public var bearing(default, null):Float = 0;
 
 	private var points:Array<Array<Float>> = [
-		[ 0, -1],
 		[ 0,  1],
+		[ 0, -1],
 		[ 1,  0],
 		[-1,  0]
 	];
@@ -39,11 +39,11 @@ class DistanceOffsetWidget extends Widget {
 		for(i in 0...4) {
 			cross.graphics.lineStyle(2, 0xcccccc);
 			cross.graphics.moveTo(0, 0);
-			cross.graphics.lineTo((spacing * points[i][0]), (spacing * points[i][1]));
+			cross.graphics.lineTo((spacing * points[i][0]), -(spacing * points[i][1]));
 			cross.graphics.lineStyle(0);
 
 			cross.graphics.beginFill(colors[i]);
-			cross.graphics.drawCircle((spacing * points[i][0]), (spacing * points[i][1]), 5);
+			cross.graphics.drawCircle((spacing * points[i][0]), -(spacing * points[i][1]), 5);
 			cross.graphics.endFill();
 		}
 
@@ -61,17 +61,29 @@ class DistanceOffsetWidget extends Widget {
 	public function tick(phases:Array<Float>, waveLength:Float):Void {
 		// Calculate phase deltas
 		var deltaPhaseNS:Float = phaseDifference(phases[0], phases[1]);
+		var deltaPhaseSN:Float = phaseDifference(phases[0], phases[1]);
 		var deltaPhaseEW:Float = phaseDifference(phases[2], phases[3]);
 
-		// Calculate based on differences in distances (need to make this find the delta from wave length
+		// The phase difference multiplied by the wave length gives us the difference
+		// between the distances traveled to each antenna. This works when the target
+		// is further away from the antenna, but is inaccurate up close I think we need
+		// to calculate this based on hitting N first, and S first, and average them.
 		var hypotenuse:Float = waveLength * 0.48;
 		var opposite:Float = deltaPhaseNS * waveLength;
 		var asin:Float = Math.asin(opposite / hypotenuse);
 		var adjacent:Float = hypotenuse * Math.cos(asin);
 
-		var angleOfArrival:Float = asin * (180 / Math.PI);
-		if(deltaPhaseEW > 0) angleOfArrival = (angleOfArrival + 180) * -1;
-		bearing = angleOfArrival;
+		// Experiment
+		var angleNS:Float = -Math.asin(deltaPhaseNS / 0.48) * (180 / Math.PI);
+		if(deltaPhaseEW > 0) angleNS = (angleNS + 180) * -1;
+		if(angleNS < 0) angleNS += 360;
+
+		var angleEW:Float = (Math.asin(deltaPhaseEW / 0.48) * (180 / Math.PI)) + 90;
+		if(deltaPhaseNS > 0) angleEW = angleEW * -1;
+		if(angleEW < 0) angleEW += 360;
+
+		bearing = (angleNS + angleEW) / 2;
+		trace(angleNS, angleEW, bearing);
 
 		// Scale the lines for Fronts and Deltas
 		var pixelsPerMeter = (spacing * 2) / hypotenuse;
@@ -79,17 +91,17 @@ class DistanceOffsetWidget extends Widget {
 		deltaNS.scaleX = (Math.abs(opposite) * pixelsPerMeter) / 100;
 
 		frontNS.x = deltaNS.x = cross.x;
-		deltaNS.rotation = bearing;
+		deltaNS.rotation = -bearing;
 		if(opposite < 0) {
 			// Hit North First
 			frontNS.y = cross.y - spacing;
 			deltaNS.y = cross.y + spacing;
-			frontNS.rotation = bearing + (deltaPhaseEW > 0 ? -90 : 90);
+			frontNS.rotation = -bearing + (deltaPhaseEW > 0 ? -90 : 90);
 		} else {
 			// Hit South First
 			frontNS.y = cross.y + spacing;
 			deltaNS.y = cross.y - spacing;
-			frontNS.rotation = bearing + (deltaPhaseEW > 0 ? 90 : -90);
+			frontNS.rotation = -bearing + (deltaPhaseEW > 0 ? 90 : -90);
 		}
 	}
 

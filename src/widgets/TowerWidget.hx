@@ -25,8 +25,8 @@ class TowerWidget extends Widget {
 	public function new() {
 		super();
 
-		antenna[0] = new Point(0, -0.24);
-		antenna[1] = new Point(0,  0.24);
+		antenna[0] = new Point(0,  0.24);
+		antenna[1] = new Point(0, -0.24);
 		antenna[2] = new Point( 0.24, 0);
 		antenna[3] = new Point(-0.24, 0);
 
@@ -74,9 +74,24 @@ class TowerWidget extends Widget {
 
 		update();
 
+		// Draw bearing lines at 45 degree intervals
+		var len:Float = Math.min(widgetWidth, widgetHeight);
+		graphics.lineStyle(1, 0x222222);
+		for(a in [0, 45, 90, 135, 180, 225, 270, 315]) {
+			graphics.moveTo(cX, cY);
+			graphics.lineTo(cX + (len * Math.sin(a * (Math.PI / 180))), cY + (len * Math.cos(a * (Math.PI / 180))));
+		}
+
+		// Draw rings at 1m intervals
+		for(i in 1...10) {
+			graphics.drawCircle(cX, cY, i * pixelsPerMeter);
+		}
+
+		graphics.lineStyle(0);
+
 		for(i in 0...4) {
 			graphics.beginFill(colors[i]);
-			graphics.drawCircle(cX + (antenna[i].x * waveLength * pixelsPerMeter), cY + (antenna[i].y * waveLength * pixelsPerMeter), 5);
+			graphics.drawCircle(cX + (antenna[i].x * waveLength * pixelsPerMeter), cY - (antenna[i].y * waveLength * pixelsPerMeter), 5);
 			graphics.endFill();
 		}
 	}
@@ -92,14 +107,14 @@ class TowerWidget extends Widget {
 			target.y = cY;
 		}
 
-		var tX:Float = (target.x - cX) / pixelsPerMeter;
-		var tY:Float = (target.y - cY) / pixelsPerMeter;
+		var tX:Float =  (target.x - cX) / pixelsPerMeter;
+		var tY:Float = -(target.y - cY) / pixelsPerMeter;
 
 		for(i in 0...4) {
 			var aX = (antenna[i].x * waveLength);
 			var aY = (antenna[i].y * waveLength);
 
-			var delta:Float = Math.sqrt(Math.pow(aX - tX, 2) + Math.pow(aY - tY, 2));
+			var delta:Float = Math.sqrt(Math.pow(tX - aX, 2) + Math.pow(tY - aY, 2));
 			phase[i] = ((delta % waveLength) / waveLength);
 		}
 	}
@@ -130,6 +145,13 @@ class TowerWidget extends Widget {
 
 	public function setZeroVector():Void {
 		setVectorFromCenter(0, 0);
+	}
+
+	public function setPositionByBearing(bearing:Float, distance:Float):Void {
+		var angleInRadians:Float = bearing * (Math.PI / 180);
+		target.x = cX + (Math.cos(angleInRadians) * (distance * pixelsPerMeter));
+		target.y = cY - (Math.sin(angleInRadians) * (distance * pixelsPerMeter));
+		update();
 	}
 
 	public function moveTarget(x, y):Void {

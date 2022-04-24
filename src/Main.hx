@@ -111,6 +111,21 @@ class Main extends Sprite {
 
 			case Keyboard.RIGHT:
 				towerWidget.moveTarget(1, 0);
+
+			case Keyboard.NUMBER_1:
+				towerWidget.setPositionByBearing(45, 1);
+
+			case Keyboard.NUMBER_2:
+				towerWidget.setPositionByBearing(45, 2);
+
+			case Keyboard.NUMBER_3:
+				towerWidget.setPositionByBearing(45, 3);
+
+			case Keyboard.NUMBER_4:
+				towerWidget.setPositionByBearing(45, 4);
+
+			case Keyboard.NUMBER_5:
+				towerWidget.setPositionByBearing(45, 5);
 		}
 	}
 }

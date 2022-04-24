@@ -2,6 +2,7 @@ package widgets;
 
 import openfl.display.Sprite;
 import openfl.events.Event;
+import openfl.geom.Rectangle;
 
 class Widget extends Sprite {
 	private var widgetWidth:Float = 0;
@@ -13,6 +14,8 @@ class Widget extends Sprite {
 	public function setDimensions(width:Float, height:Float) {
 		widgetWidth = width;
 		widgetHeight = height;
+
+		scrollRect = new Rectangle(0, 0, width, height);
 
 		redraw();
 	}
